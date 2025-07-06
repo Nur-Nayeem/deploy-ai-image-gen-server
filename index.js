@@ -2,7 +2,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { GoogleGenAI, Modality } from "@google/genai";
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from "dotenv";
 import { v2 as cloudinary } from 'cloudinary';
 import db from './db.js';
