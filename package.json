@@ -2,8 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +20,7 @@
     "express": "^5.1.0",
     "http": "^0.0.1-security",
     "lowdb": "^7.0.1",
-<<<<<<< HEAD
-=======
     "mongoose": "^8.16.2",
->>>>>>> 626215b (add online database Mongodb atlus)
     "path": "^0.12.7",
     "socket.io": "^4.8.1",
     "url": "^0.11.4"
