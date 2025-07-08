@@ -4,7 +4,11 @@ import cors from "cors";
 import { GoogleGenAI, Modality } from "@google/genai";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from 'cloudinary';
+<<<<<<< HEAD
 import db from './db.js';
+=======
+import { connectDB, Image } from './db.js'; // Import connectDB and Image model
+>>>>>>> 626215b (add online database Mongodb atlus)
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
@@ -16,6 +20,12 @@ const io = new Server(httpServer, {
   cors: { origin: "*" }
 });
 
+<<<<<<< HEAD
+=======
+// Connect to MongoDB Atlas
+connectDB();
+
+>>>>>>> 626215b (add online database Mongodb atlus)
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 
@@ -67,17 +77,29 @@ app.post("/generate-image", async (req, res) => {
 });
 
 app.post("/publish-image", async (req, res) => {
+<<<<<<< HEAD
   const { base64Image } = req.body;
+=======
+  const { base64Image, prompt } = req.body; // Destructure prompt from req.body
+>>>>>>> 626215b (add online database Mongodb atlus)
 
   if (!base64Image) {
     return res.status(400).json({ error: "No image provided" });
   }
+<<<<<<< HEAD
+=======
+  // Add validation for prompt as well, if it's required
+  if (!prompt) {
+    return res.status(400).json({ error: "No prompt provided for publishing" });
+  }
+>>>>>>> 626215b (add online database Mongodb atlus)
 
   try {
     const result = await cloudinary.uploader.upload(`data:image/png;base64,${base64Image}`, {
       folder: "gemini-images",
     });
 
+<<<<<<< HEAD
     // Store in local DB
     await db.read();
     db.data.images ||= [];
@@ -90,20 +112,45 @@ app.post("/publish-image", async (req, res) => {
     res.json({ url: result.secure_url });
   } catch (error) {
     console.error("Cloudinary upload failed:", error);
+=======
+    // Store in MongoDB Atlas, now including the prompt
+    const newImage = new Image({ url: result.secure_url, prompt: prompt });
+    await newImage.save();
+
+    // Realtime update
+    io.emit("new-image", { url: result.secure_url, prompt: prompt }); // Emit prompt with new image
+
+    res.json({ url: result.secure_url, prompt: prompt });
+  } catch (error) {
+    console.error("Cloudinary upload or MongoDB save failed:", error);
+>>>>>>> 626215b (add online database Mongodb atlus)
     res.status(500).json({ error: "Upload failed" });
   }
 });
 
 app.get("/list-images", async (req, res) => {
   try {
+<<<<<<< HEAD
     await db.read();
     res.json({ images: db.data.images || [] });
   } catch (err) {
     console.error("Error listing images:", err);
+=======
+    // Fetch images from MongoDB Atlas, sorted by creation date (newest first)
+    // We now fetch both url and prompt
+    const images = await Image.find().sort({ createdAt: -1 }).select('url prompt'); // Select specific fields
+    res.json({ images: images }); // Return the full image objects (url and prompt)
+  } catch (err) {
+    console.error("Error listing images from MongoDB:", err);
+>>>>>>> 626215b (add online database Mongodb atlus)
     res.status(500).json({ error: "Failed to load images" });
   }
 });
 
 httpServer.listen(3000, () => {
   console.log(" Server running at http://localhost:3000");
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 626215b (add online database Mongodb atlus)
