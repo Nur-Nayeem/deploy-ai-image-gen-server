@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { connectDB, Image } from './db.js'; // Import connectDB and Image model
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import fs from "fs";
 
 dotenv.config();
 
@@ -68,6 +69,54 @@ app.post("/generate-image", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.post("/generate-image-from-text-and-image", async (req, res) => {
+  const { prompt, image } = req.body;
+  if (!prompt || !image) {
+    return res.status(400).json({ error: "Prompt and image are required." });
+  }
+
+
+  const contents = [
+    { text: prompt },
+    {
+      inlineData: {
+        mimeType: "image/png",
+        data: image,
+      },
+    },
+  ];
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-preview-image-generation",
+      contents,
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+    });
+
+    const parts = response.candidates[0].content.parts;
+
+    let resultImageBase64 = null;
+    let resultText = null;
+
+    for (const part of parts) {
+      if (part.inlineData) resultImageBase64 = part.inlineData.data;
+      if (part.text) resultText = part.text;
+    }
+
+    if (!resultImageBase64) {
+      return res.status(500).json({ error: "No image returned from model" });
+    }
+
+    res.json({ imageBase64: resultImageBase64, modelTextResponse: resultText || "" });
+  } catch (err) {
+    console.error("❌  generation failed:", err);
+    res.status(500).json({ error: "Image generation failed" });
+  }
+});
+
 
 app.post("/publish-image", async (req, res) => {
   const { base64Image, prompt } = req.body; // Destructure prompt from req.body
